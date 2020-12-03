@@ -26,6 +26,14 @@ function splu(s::Transpose{Tv, SparseMatrixCSC{Tv, Ti}}) where {Tv<:SuperLUValue
     return Transpose(lu)
 end
 
+function splu(s::Adjoint{Tv, SparseMatrixCSC{Tv, Ti}}) where {Tv<:SuperLUValueTypes, Ti}
+    options_arr = Vector{superlu_options_t}(undef, 1)
+    set_default_options(options_arr)
+    options = options_arr[1]
+    lu = _splu(s.parent, options)
+    return Adjoint(lu)
+end
+
 function _splu(
     s::SparseMatrixCSC{Tv, Ti},
     options::superlu_options_t;
