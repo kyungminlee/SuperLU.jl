@@ -16,7 +16,7 @@ end
 
 # not sure why Julia only implements \ for NoTrans and Adjoint.
 function Base.:(\)(tF::Transpose{Tv,LUDecomposition{Tv, Ti}}, B::AbstractVecOrMat) where {Tv, Ti}
-    require_one_based_indexing(B)
+    Base.require_one_based_indexing(B)
     F = tF.parent
     TFB = typeof(oneunit(eltype(B)) / oneunit(eltype(F)))
     BB = similar(B, TFB, size(B))
