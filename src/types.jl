@@ -23,15 +23,8 @@ Base.size(x::LUDecomposition) = x.size
 Base.size(x::LUDecomposition, i::Integer) = x.size[i]
 Base.length(x::LUDecomposition) = x.size[1] * x.size[2]
 
-
 Base.transpose(f::LUDecomposition) = Transpose(f)
 Base.adjoint(f::LUDecomposition) = Adjoint(f)
-
-# Base.eltype(::Type{LUDecomposition{Tv, Ti}}) where {Tv, Ti} = Tv
-# Base.size(s::Transpose{Tv, LUDecomposition{Tv, Ti}}) where {Tv, Ti} = reverse(size(s.parent))
-# Base.size(s::Transpose{Tv, LUDecomposition{Tv, Ti}}) where {Tv, Ti} = reverse(size(s.parent))
-
-
 
 @inline function Base.getproperty(lu::LUDecomposition, d::Symbol)
     if d == :L
@@ -48,8 +41,6 @@ Base.adjoint(f::LUDecomposition) = Adjoint(f)
         getfield(lu, d)
     end
 end
-
-
 
 
 function extract_L(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
@@ -87,14 +78,9 @@ function extract_L(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
     Lrow = Vector{Int}(undef, nnzL)
     Lcol = Vector{Int}(undef, m+1)
 
-    # Lval = Tv[]
-    # Lrow = Int[]
-    # Lcol = Int[]
-
     # copy values
     let lastl = 0
         Lcol[1] = BASE
-        # push!(Lcol, BASE)
         for k in BASE:Lstore.nsuper+BASE
             fsupc = unsafe_load(Lstore.sup_to_col, k) + BASE
             istart = unsafe_load(Lstore.rowind_colptr, fsupc)
@@ -105,20 +91,15 @@ function extract_L(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
                 lastl += 1
                 Lval[lastl] = one(Tv)
                 Lrow[lastl] = unsafe_load(Lstore.rowind, istart + upper) + BASE
-                # push!(Lval, one(Float64))
-                # push!(Lrow, unsafe_load(Lstore.rowind, istart + upper) + BASE)
                 for i in upper+1:nsupr
                     v = unsafe_load(Ptr{Tv}(Lstore.nzval), SNptr_offset+i)
                     if !iszero(v)
                         lastl += 1
                         Lval[lastl] = v
                         Lrow[lastl] = unsafe_load(Lstore.rowind, istart + i) + BASE
-                        # push!(Lval, v)
-                        # push!(Lrow, unsafe_load(Lstore.rowind, istart + i) + BASE)
                     end
                 end
                 Lcol[j+1] = lastl + 1
-                # push!(Lcol, lastl + 1)
                 upper += 1
             end
         end
@@ -168,14 +149,10 @@ function extract_U(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
     Uval = Vector{Tv}(undef, nnzU)
     Urow = Vector{Int}(undef, nnzU)
     Ucol = Vector{Int}(undef, m+1)
-    # Uval = Tv[]
-    # Urow = Int[]
-    # Ucol = Int[]
 
     # copy values
     let lastu = 0
         Ucol[1] = BASE
-        # push!(Ucol, BASE)
         for k in BASE:Lstore.nsuper+BASE
             fsupc = unsafe_load(Lstore.sup_to_col, k) + BASE
             istart = unsafe_load(Lstore.rowind_colptr, fsupc)
@@ -189,8 +166,6 @@ function extract_U(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
                         lastu += 1
                         Uval[lastu] = v
                         Urow[lastu] = unsafe_load(Ustore.rowind, i)
-                        # push!(Uval, v)
-                        # push!(Urow, unsafe_load(Ustore.rowind, i))
                     end
                 end
                 for i in 1:upper
@@ -199,12 +174,9 @@ function extract_U(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
                         lastu += 1
                         Uval[lastu] = v
                         Urow[lastu] = unsafe_load(Lstore.rowind, istart + i) + BASE
-                        # push!(Uval, v)
-                        # push!(Urow, unsafe_load(Lstore.rowind, istart + i) + BASE)
                     end
                 end
                 Ucol[j+1] = lastu + 1
-                # push!(Ucol, lastu + 1)
                 upper += 1
             end
         end
@@ -218,56 +190,12 @@ function extract_stat(stat::SuperLUStat_t)
     relax = sp_ienv(2)
     w = max(panel_size, relax)
     n_phases = Int(NPHASES)
+
     panel_histo = Vector{Int}(undef, w+1)
     utime = Vector{Float64}(undef, n_phases)
     ops = Vector{Float64}(undef, n_phases)
-
-    panel_histo[:] .= unsafe_wrap(Array, stat.panel_histo, w+1)
-    utime[:] .= unsafe_wrap(Array, stat.utime, n_phases)
-    ops[:] .= unsafe_wrap(Array, stat.ops, n_phases)
-
-    # ops_tuple = eval(
-    #     Expr(
-    #         :tuple,
-    #         [
-    #             :($x=($ops)[Int($x)+1])
-    #             for x in [
-    #                 :COLPERM, :ROWPERM, :RELAX,
-    #                 :ETREE, :EQUIL, :SYMBFAC,
-    #                 :DIST, :FACT,
-    #                 :COMM, :COMM_DIAG, :COMM_RIGHT, :COMM_DOWN,
-    #                 :SOL_COMM, :SOL_GEMM, :SOL_TRSM, :SOL_TOT,
-    #                 :RCOND, :SOLVE, :REFINE, :TRSV, :GEMV, :FERR,
-    #             ]
-    #         ]...
-    #     )
-    # )
-
-    # utime_tuple = eval(
-    #     Expr(
-    #         :tuple,
-    #         [
-    #             :($x=($utime)[Int($x)+1])
-    #             for x in [
-    #                 :COLPERM, :ROWPERM, :RELAX,
-    #                 :ETREE, :EQUIL, :SYMBFAC,
-    #                 :DIST, :FACT,
-    #                 :COMM, :COMM_DIAG, :COMM_RIGHT, :COMM_DOWN,
-    #                 :SOL_COMM, :SOL_GEMM, :SOL_TRSM, :SOL_TOT,
-    #                 :RCOND, :SOLVE, :REFINE, :TRSV, :GEMV, :FERR,
-    #             ]
-    #         ]...
-    #     )
-    # )
-
-    # @show ops_tuple
-    # @show utime_tuple
-    return LUStatistics(
-        panel_histo,
-        utime,
-        ops,
-        stat.TinyPivots,
-        stat.RefineSteps,
-        stat.expansions
-    )
+    copy!(panel_histo, unsafe_wrap(Array, stat.panel_histo, w+1))
+    copy!(utime, unsafe_wrap(Array, stat.utime, n_phases))
+    copy!(ops, unsafe_wrap(Array, stat.ops, n_phases))
+    return LUStatistics(panel_histo, utime, ops, stat.TinyPivots, stat.RefineSteps, stat.expansions)
 end
