@@ -71,6 +71,8 @@ using SuiteSparse
             @test isapprox(bp1, b0)
             @test isapprox(bp2, b0)
         end
+
+        # TODO: test for exceptions. non-unit strides etc.
     end
 
 end
