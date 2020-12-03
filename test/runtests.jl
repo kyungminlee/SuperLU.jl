@@ -22,7 +22,9 @@ using SuiteSparse
             0 0 0
         ]
         b2 = DTYPE[0, 0, 1, 0, 0]
-        for trans in [identity, transpose, adjoint], b in [b1, b2]
+        for trans in [identity, transpose, adjoint], b0 in [b1, b2]
+            b = copy(b0)
+
             s0 = trans(lu(A))
             s1 = splu(trans(A))
             s2 = trans(splu(A))
@@ -33,6 +35,21 @@ using SuiteSparse
             @test !iszero(y0)
             @test isapprox(y1, y0)
             @test isapprox(y2, y0)
+
+            z1 = copy(b)
+            z2 = copy(b)
+            ldiv!(s1, z1)
+            ldiv!(s2, z2)
+            @test isapprox(z1, y0)
+            @test isapprox(z2, y0)
+
+            w1 = zero(b)
+            w2 = zero(b)
+            ldiv!(w1, s1, b)
+            ldiv!(w2, s2, b)
+            @test isapprox(w1, y0)
+            @test isapprox(w2, y0)
+            @test b == b0           # b is left untouched by ldiv!
 
             bp0 = trans(A) * y0
             bp1 = trans(A) * y1
