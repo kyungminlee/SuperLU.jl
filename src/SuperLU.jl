@@ -5,7 +5,7 @@ using LinearAlgebra
 
 export splu
 
-include("cSuperLU.jl")
+include("libsuperlu_api.jl")
 include("types.jl")
 include("splu.jl")
 include("linalg.jl")
