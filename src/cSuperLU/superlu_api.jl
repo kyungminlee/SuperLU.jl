@@ -1,3 +1,5 @@
+# COV_EXCL_START
+
 import SuperLU_jll: libsuperlu
 
 gstrs(::Type{Float32}, args...) = sgstrs(args...)
@@ -151,3 +153,5 @@ end
 function Destroy_Dense_Matrix(arg1)
     ccall((:Destroy_Dense_Matrix, libsuperlu), Cvoid, (Ptr{SuperMatrix},), arg1)
 end
+
+# COV_EXCL_STOP

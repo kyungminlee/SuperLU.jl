@@ -1,3 +1,5 @@
+# COV_EXCL_START
+
 # Automatically generated using Clang.jl
 
 
@@ -443,3 +445,5 @@ struct NRformat_loc
     rowptr::Ptr{SuperLUInt}
     colind::Ptr{SuperLUInt}
 end
+
+# COV_EXCL_STOP
