@@ -1,6 +1,5 @@
 # COV_EXCL_START
 
-import SuperLU_jll: libsuperlu
 
 gstrs(::Type{Float32}, args...) = sgstrs(args...)
 gstrs(::Type{Float64}, args...) = dgstrs(args...)

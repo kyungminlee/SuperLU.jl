@@ -9,29 +9,25 @@ _get_matrix_strides(b::StridedVector) = (stride(b, 1), length(b))
 _get_matrix_strides(b::StridedMatrix) = strides(b)
 
 
-function splu(s::SparseMatrixCSC{Tv, <:Integer}) where {Tv<:SuperLUValueTypes}
-    options_arr = Vector{superlu_options_t}(undef, 1)
-    set_default_options(options_arr)
-    options = options_arr[1]
-    lu = _splu(s, options)
+function splu(s::SparseMatrixCSC{Tv, Ti}) where {Tv<:SuperLUValueTypes, Ti}
+    options = Ref{superlu_options_t}()
+    set_default_options(options)
+    lu = _splu(s, options[])
     return lu
 end
 
 function splu(s::Transpose{Tv, SparseMatrixCSC{Tv, Ti}}) where {Tv<:SuperLUValueTypes, Ti}
-    options_arr = Vector{superlu_options_t}(undef, 1)
-    set_default_options(options_arr)
-    options = options_arr[1]
-    lu = _splu(s.parent, options)
-    # return Transpose{Tv, typeof(lu)}(lu)
-    return Transpose(lu)
+    options = Ref{superlu_options_t}()
+    set_default_options(options)
+    lu = _splu(s.parent, options[])
+    return transpose(lu)
 end
 
 function splu(s::Adjoint{Tv, SparseMatrixCSC{Tv, Ti}}) where {Tv<:SuperLUValueTypes, Ti}
-    options_arr = Vector{superlu_options_t}(undef, 1)
-    set_default_options(options_arr)
-    options = options_arr[1]
-    lu = _splu(s.parent, options)
-    return Adjoint(lu)
+    options = Ref{superlu_options_t}()
+    set_default_options(options)
+    lu = _splu(s.parent, options[])
+    return adjoint(lu)
 end
 
 function _splu(
@@ -55,41 +51,38 @@ function _splu(
     perm_r = collect(SuperLUInt, 0:n-1)
     perm_c = collect(SuperLUInt, 0:n-1)
 
-    stat_arr = Vector{SuperLUStat_t}(undef, 1)
-    L_arr = Vector{SuperMatrix}(undef, 1)
-    U_arr = Vector{SuperMatrix}(undef, 1)
-    Glu_arr = Vector{GlobalLU_t}(undef, 1)
-    info_arr = Vector{SuperLUInt}(undef, 1)
+    stat = Ref{SuperLUStat_t}()
+    L = Ref{SuperMatrix}()
+    U = Ref{SuperMatrix}()
+    Glu = Ref{GlobalLU_t}()
+    info = Ref{SuperLUInt}()
 
     get_perm_c(options.ColPerm, A, pointer(perm_c))
 
-    StatInit(stat_arr)
+    StatInit(stat)
     GC.@preserve nzval rowind colptr A Astore begin
-        Ac_arr = Vector{SuperMatrix}(undef, 1)
-        sp_preorder(Ref(options), A, perm_c, etree, Ac_arr)
+        Ac = Ref{SuperMatrix}()
+        sp_preorder(Ref(options), A, perm_c, etree, Ac)
         gstrf(
             Tv,
-            Ref(options), Ac_arr, relax, panel_size, etree,
+            Ref(options), Ac, relax, panel_size, etree,
             C_NULL, zero(SuperLUInt),
-            perm_c, perm_r, L_arr, U_arr,
-            Glu_arr, stat_arr, info_arr
+            perm_c, perm_r, L, U,
+            Glu, stat, info
         )
-        Destroy_CompCol_Permuted(Ac_arr)
+        Destroy_CompCol_Permuted(Ac)
     end
 
-    if info_arr[1] != 0
-        if info_arr[1] < 0
-            throw(ArgumentError("gstrf called with invalid argument at $(-info_arr[1])"))
-        elseif info_arr[1] <= n
-            throw(LinearAlgebra.SingularException(info_arr[1]))
+    if info[] != 0
+        if info[] < 0
+            throw(ArgumentError("gstrf called with invalid argument at $(-info[])"))
+        elseif info[] <= n
+            throw(LinearAlgebra.SingularException(info[]))
         else
             throw(OutOfMemoryError())
         end
     end
-    L = L_arr[1]
-    U = U_arr[1]
-    stat = stat_arr[1]
-    lu = LUDecomposition{Tv, SuperLUInt}((m, n), perm_r, perm_c, L, U, stat) #, options, stat)
+    lu = LUDecomposition{Tv, SuperLUInt}(perm_r, perm_c, L[], U[], stat[]) #, options, stat)
     finalizer(lu) do lu
         Destroy_SuperNode_Matrix(Ref(lu._L))
         Destroy_CompCol_Matrix(Ref(lu._U))
@@ -97,7 +90,6 @@ function _splu(
     end
     return lu
 end
-
 
 
 function solve!(a::LUDecomposition{Tv, SuperLUInt}, b::StridedVecOrMat{Tv}, trans::trans_t=NOTRANS) where {Tv}
@@ -110,7 +102,7 @@ function solve!(a::LUDecomposition{Tv, SuperLUInt}, b::StridedVecOrMat{Tv}, tran
         throw(ArgumentError("in and output vectors must have unit strides"))
     end
 
-    ma, na = a.size
+    ma, na = size(a)
     if na != mb
         throw(ArgumentError("shapes do not match"))
     end
@@ -118,10 +110,10 @@ function solve!(a::LUDecomposition{Tv, SuperLUInt}, b::StridedVecOrMat{Tv}, tran
     B = Ref(SuperMatrix(SLU_DN, dtype, SLU_GE, mb, nb, Base.unsafe_convert(Ptr{Cvoid}, Bstore)))
 
     GC.@preserve Bstore B begin
-        info_arr = Vector{SuperLUInt}(undef, 1)
-        gstrs(Tv, trans, Ref(a._L), Ref(a._U), a._perm_c, a._perm_r, B, Ref(a._stat), info_arr)
-        if info_arr[1] != 0
-            throw(ArgumentError("gstrs called with invalid argument at $(-info_arr[1])"))
+        info = Ref{SuperLUInt}()
+        gstrs(Tv, trans, Ref(a._L), Ref(a._U), a._perm_c, a._perm_r, B, Ref(a._stat), info)
+        if info[] != 0
+            throw(ArgumentError("gstrs called with invalid argument at $(-info[])"))
         end
         return b
     end

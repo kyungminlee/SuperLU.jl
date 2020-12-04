@@ -2,7 +2,6 @@
 SuperLUValueTypes = Union{Float32, Float64, ComplexF32, ComplexF64}
 
 mutable struct LUDecomposition{Tv<:SuperLUValueTypes, Ti<:Union{SuperLUInt}} <: LinearAlgebra.Factorization{Tv}
-    size::Tuple{Int, Int}
     _perm_r::Vector{Ti}
     _perm_c::Vector{Ti}
     _L::SuperMatrix
@@ -19,22 +18,21 @@ struct LUStatistics
     expansions::Int
 end
 
-Base.size(x::LUDecomposition) = x.size
-Base.size(x::LUDecomposition, i::Integer) = x.size[i]
-Base.length(x::LUDecomposition) = x.size[1] * x.size[2]
+Base.size(x::LUDecomposition) = (Int(x._L.nrow), Int(x._U.ncol))
+Base.size(x::LUDecomposition, i::Integer) = size(x)[i]
 
 Base.transpose(f::LUDecomposition) = Transpose(f)
 Base.adjoint(f::LUDecomposition) = Adjoint(f)
 
-@inline function Base.getproperty(lu::LUDecomposition, d::Symbol)
+@inline function Base.getproperty(lu::LUDecomposition{Tv, Ti}, d::Symbol) where {Tv, Ti}
     if d == :L
         return extract_L(lu)
     elseif d == :U
         return extract_U(lu)
     elseif d == :perm_r
-        return map((x::SuperLUInt) -> Int(x) + 1, lu._perm_r)
+        return map((x::Ti) -> x + 1, lu._perm_r)
     elseif d == :perm_c
-        return map((x::SuperLUInt) -> Int(x) + 1, lu._perm_c)
+        return map((x::Ti) -> x + 1, lu._perm_c)
     elseif d == :stat
         return extract_stat(lu._stat)
     else
@@ -117,7 +115,7 @@ function extract_U(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
     @assert U.Dtype == dtype
     @assert U.Mtype == SLU_TRU
 
-    m::Int, n::Int = L.nrow, L.ncol
+    m::Int, n::Int = U.nrow, U.ncol
 
     Lstore = unsafe_load(Ptr{SCformat}(L.Store))
     Ustore = unsafe_load(Ptr{NCformat}(U.Store))
@@ -198,4 +196,17 @@ function extract_stat(stat::SuperLUStat_t)
     copy!(utime, unsafe_wrap(Array, stat.utime, n_phases))
     copy!(ops, unsafe_wrap(Array, stat.ops, n_phases))
     return LUStatistics(panel_histo, utime, ops, stat.TinyPivots, stat.RefineSteps, stat.expansions)
+end
+
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, F::LUDecomposition)
+    println(io, summary(F))
+    println(io, "L factor:")
+    show(io, mime, F.L)
+    println(io, "\nU factor:")
+    show(io, mime, F.U)
+    println(io, "\nRow permutation:")
+    show(io, mime, F.perm_r)
+    println(io, "\nColumn permutation:")
+    show(io, mime, F.perm_c)
 end
