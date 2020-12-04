@@ -376,74 +376,74 @@ end
 end
 
 
-struct SuperMatrix
-    Stype::Stype_t
-    Dtype::Dtype_t
-    Mtype::Mtype_t
-    nrow::SuperLUInt
-    ncol::SuperLUInt
-    Store::Ptr{Cvoid}
-end
-
-struct NCformat
-    nnz::SuperLUInt
-    nzval::Ptr{Cvoid}
-    rowind::Ptr{SuperLUInt}
-    colptr::Ptr{SuperLUInt}
-end
-
-# struct NRformat
-#     nnz::SuperLUInt
-#     nzval::Ptr{Cvoid}
-#     colind::Ptr{SuperLUInt}
-#     rowptr::Ptr{SuperLUInt}
+# struct SuperMatrix
+#     Stype::Stype_t
+#     Dtype::Dtype_t
+#     Mtype::Mtype_t
+#     nrow::SuperLUInt
+#     ncol::SuperLUInt
+#     Store::Ptr{Cvoid}
 # end
 
-struct SCformat
-    nnz::SuperLUInt
-    nsuper::SuperLUInt
-    nzval::Ptr{Cvoid}
-    nzval_colptr::Ptr{SuperLUInt}
-    rowind::Ptr{SuperLUInt}
-    rowind_colptr::Ptr{SuperLUInt}
-    col_to_sup::Ptr{SuperLUInt}
-    sup_to_col::Ptr{SuperLUInt}
-end
+# struct NCformat
+#     nnz::SuperLUInt
+#     nzval::Ptr{Cvoid}
+#     rowind::Ptr{SuperLUInt}
+#     colptr::Ptr{SuperLUInt}
+# end
 
-# struct SCPformat
+# # struct NRformat
+# #     nnz::SuperLUInt
+# #     nzval::Ptr{Cvoid}
+# #     colind::Ptr{SuperLUInt}
+# #     rowptr::Ptr{SuperLUInt}
+# # end
+
+# struct SCformat
 #     nnz::SuperLUInt
 #     nsuper::SuperLUInt
 #     nzval::Ptr{Cvoid}
-#     nzval_colbeg::Ptr{SuperLUInt}
-#     nzval_colend::Ptr{SuperLUInt}
+#     nzval_colptr::Ptr{SuperLUInt}
 #     rowind::Ptr{SuperLUInt}
-#     rowind_colbeg::Ptr{SuperLUInt}
-#     rowind_colend::Ptr{SuperLUInt}
+#     rowind_colptr::Ptr{SuperLUInt}
 #     col_to_sup::Ptr{SuperLUInt}
-#     sup_to_colbeg::Ptr{SuperLUInt}
-#     sup_to_colend::Ptr{SuperLUInt}
+#     sup_to_col::Ptr{SuperLUInt}
 # end
 
-# struct NCPformat
-#     nnz::SuperLUInt
+# # struct SCPformat
+# #     nnz::SuperLUInt
+# #     nsuper::SuperLUInt
+# #     nzval::Ptr{Cvoid}
+# #     nzval_colbeg::Ptr{SuperLUInt}
+# #     nzval_colend::Ptr{SuperLUInt}
+# #     rowind::Ptr{SuperLUInt}
+# #     rowind_colbeg::Ptr{SuperLUInt}
+# #     rowind_colend::Ptr{SuperLUInt}
+# #     col_to_sup::Ptr{SuperLUInt}
+# #     sup_to_colbeg::Ptr{SuperLUInt}
+# #     sup_to_colend::Ptr{SuperLUInt}
+# # end
+
+# # struct NCPformat
+# #     nnz::SuperLUInt
+# #     nzval::Ptr{Cvoid}
+# #     rowind::Ptr{SuperLUInt}
+# #     colbeg::Ptr{SuperLUInt}
+# #     colend::Ptr{SuperLUInt}
+# # end
+
+# struct DNformat
+#     lda::SuperLUInt
 #     nzval::Ptr{Cvoid}
-#     rowind::Ptr{SuperLUInt}
-#     colbeg::Ptr{SuperLUInt}
-#     colend::Ptr{SuperLUInt}
 # end
 
-struct DNformat
-    lda::SuperLUInt
-    nzval::Ptr{Cvoid}
-end
-
-# struct NRformat_loc
-#     nnz_loc::SuperLUInt
-#     m_loc::SuperLUInt
-#     fst_row::SuperLUInt
-#     nzval::Ptr{Cvoid}
-#     rowptr::Ptr{SuperLUInt}
-#     colind::Ptr{SuperLUInt}
-# end
+# # struct NRformat_loc
+# #     nnz_loc::SuperLUInt
+# #     m_loc::SuperLUInt
+# #     fst_row::SuperLUInt
+# #     nzval::Ptr{Cvoid}
+# #     rowptr::Ptr{SuperLUInt}
+# #     colind::Ptr{SuperLUInt}
+# # end
 
 # COV_EXCL_STOP

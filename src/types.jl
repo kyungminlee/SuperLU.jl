@@ -1,6 +1,12 @@
 
 SuperLUValueTypes = Union{Float32, Float64, ComplexF32, ComplexF64}
 
+# mutable struct SuperMatrixWrapper{Tv, StorageFormat<:SuperLUStorageFormat{Tv}}
+#     _supermatrix::SuperMatrix{Tv, StorageFormat}
+#     _store::
+# end
+
+
 mutable struct LUDecomposition{Tv<:SuperLUValueTypes, Ti<:Union{SuperLUInt}} <: LinearAlgebra.Factorization{Tv}
     _perm_r::Vector{Ti}
     _perm_c::Vector{Ti}
@@ -51,7 +57,7 @@ function extract_L(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
 
     m::Int, n::Int = L.nrow, L.ncol
 
-    Lstore = unsafe_load(Ptr{SCformat}(L.Store))
+    Lstore = unsafe_load(Ptr{SCformat{Tv}}(L.Store))
     sup_to_col = unsafe_wrap(Array, Lstore.sup_to_col, Lstore.nsuper+1)
     nnzL = let lastl = 0
         for k in BASE:Lstore.nsuper+BASE
@@ -117,8 +123,8 @@ function extract_U(A::LUDecomposition{Tv, Ti}) where {Tv, Ti}
 
     m::Int, n::Int = U.nrow, U.ncol
 
-    Lstore = unsafe_load(Ptr{SCformat}(L.Store))
-    Ustore = unsafe_load(Ptr{NCformat}(U.Store))
+    Lstore = unsafe_load(Ptr{SCformat{Tv}}(L.Store))
+    Ustore = unsafe_load(Ptr{NCformat{Tv}}(U.Store))
 
     sup_to_col = unsafe_wrap(Array, Lstore.sup_to_col, Lstore.nsuper+1)
 

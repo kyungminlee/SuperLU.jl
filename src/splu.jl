@@ -44,16 +44,17 @@ function _splu(
     nzval::Vector{Tv} = s.nzval
     rowind::Vector{SuperLUInt} = [SuperLUInt(y-1) for y in s.rowval]
     colptr::Vector{SuperLUInt} = [SuperLUInt(y-1) for y in s.colptr]
-    Astore = Ref(NCformat(nnz, pointer(nzval), pointer(rowind), pointer(colptr)))
-    A = Ref(SuperMatrix(SLU_NC, dtype, SLU_GE, m, n, Base.unsafe_convert(Ptr{Cvoid}, Astore)))
+    Astore = Ref(NCformat{Tv}(nnz, pointer(nzval), pointer(rowind), pointer(colptr)))
+    # A = Ref(SuperMatrix(SLU_NC, dtype, SLU_GE, m, n, Base.unsafe_convert(Ptr{Cvoid}, Astore)))
+    A = Ref(SuperMatrix{Tv,NCformat{Tv}}(SLU_NC, dtype, SLU_GE, m, n, pointer_from_objref(Astore)))
 
     etree = zeros(SuperLUInt, n)
     perm_r = collect(SuperLUInt, 0:n-1)
     perm_c = collect(SuperLUInt, 0:n-1)
 
     stat = Ref{SuperLUStat_t}()
-    L = Ref{SuperMatrix}()
-    U = Ref{SuperMatrix}()
+    L = Ref{SuperMatrix{Tv, SCformat{Tv}}}()
+    U = Ref{SuperMatrix{Tv, NCformat{Tv}}}()
     Glu = Ref{GlobalLU_t}()
     info = Ref{SuperLUInt}()
 
@@ -61,10 +62,10 @@ function _splu(
 
     StatInit(stat)
     GC.@preserve nzval rowind colptr A Astore begin
-        Ac = Ref{SuperMatrix}()
+        Ac = Ref{SuperMatrix{Tv, NCPformat{Tv}}}()
         sp_preorder(Ref(options), A, perm_c, etree, Ac)
         gstrf(
-            Tv,
+            # Tv,
             Ref(options), Ac, relax, panel_size, etree,
             C_NULL, zero(SuperLUInt),
             perm_c, perm_r, L, U,
@@ -106,12 +107,12 @@ function solve!(a::LUDecomposition{Tv, SuperLUInt}, b::StridedVecOrMat{Tv}, tran
     if na != mb
         throw(ArgumentError("shapes do not match"))
     end
-    Bstore = Ref(DNformat(s_ldb, pointer(b)))
-    B = Ref(SuperMatrix(SLU_DN, dtype, SLU_GE, mb, nb, Base.unsafe_convert(Ptr{Cvoid}, Bstore)))
+    Bstore = Ref(DNformat{Tv}(s_ldb, pointer(b)))
+    B = Ref(SuperMatrix{Tv, DNformat{Tv}}(SLU_DN, dtype, SLU_GE, mb, nb, pointer_from_objref(Bstore)))
 
     GC.@preserve Bstore B begin
         info = Ref{SuperLUInt}()
-        gstrs(Tv, trans, Ref(a._L), Ref(a._U), a._perm_c, a._perm_r, B, Ref(a._stat), info)
+        gstrs(trans, Ref(a._L), Ref(a._U), a._perm_c, a._perm_r, B, Ref(a._stat), info)
         if info[] != 0
             throw(ArgumentError("gstrs called with invalid argument at $(-info[])"))
         end
