@@ -72,8 +72,24 @@ using SuiteSparse
             @test isapprox(bp1, b0)
             @test isapprox(bp2, b0)
         end
-
         # TODO: test for exceptions. non-unit strides etc.
     end
 
+    @testset "L/U" begin
+        A = sparse(Float64[1 2 3; 4 5 6; 7 8 10])
+        lu = splu(A)
+        Pr = lu.perm_r
+        Pc = lu.perm_c
+        L = lu.L
+        U = lu.U
+        @test sort(Pr) == 1:length(Pr)
+        @test sort(Pc) == 1:length(Pc)
+        @test issparse(L)
+        @test issparse(U)
+        @test size(L) == size(A)
+        @test size(U) == size(A)
+        @test all(i >= j || iszero(L[i,j]) for i in 1:size(L, 1), j in 1:size(L, 2))
+        @test all(i <= j || iszero(U[i,j]) for i in 1:size(U, 1), j in 1:size(U, 2))
+        @test A ≈ (L * U)[Pr, Pc]
+    end
 end
