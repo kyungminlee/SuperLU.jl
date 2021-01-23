@@ -1,0 +1,3 @@
+var documenterSearchIndex = {"docs":
+[{"location":"","page":"Home","title":"Home","text":"Author = \"Kyungmin Lee\"","category":"page"},{"location":"#SuperLU.jl","page":"Home","title":"SuperLU.jl","text":"","category":"section"},{"location":"","page":"Home","title":"Home","text":"SuperLU is Julia interface to SuperLU","category":"page"},{"location":"#Installation","page":"Home","title":"Installation","text":"","category":"section"},{"location":"","page":"Home","title":"Home","text":"julia> ]add SuperLU","category":"page"},{"location":"#Usage","page":"Home","title":"Usage","text":"","category":"section"},{"location":"","page":"Home","title":"Home","text":"julia> using SuperLU\njulia> splu([1.0 2.0; 3.0 4.0])","category":"page"}]
+}
