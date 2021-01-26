@@ -1,32 +1,5 @@
 # COV_EXCL_START
 
-
-# gstrs(::Type{Float32}, args...) = sgstrs(args...)
-# gstrs(::Type{Float64}, args...) = dgstrs(args...)
-# gstrs(::Type{ComplexF32}, args...) = cgstrs(args...)
-# gstrs(::Type{ComplexF64}, args...) = zgstrs(args...)
-
-
-# gstrf(::Type{Float32}, args...) = sgstrf(args...)
-# gstrf(::Type{Float64}, args...) = dgstrf(args...)
-# gstrf(::Type{ComplexF32}, args...) = cgstrf(args...)
-# gstrf(::Type{ComplexF64}, args...) = zgstrf(args...)
-
-# _type_prefix(::Type{Float32}) = "s"
-# _type_prefix(::Type{Float64}) = "d"
-# _type_prefix(::Type{ComplexF32}) = "c"
-# _type_prefix(::Type{ComplexF64}) = "z"
-# _type_prefix(x::Any) = let
-#     println()
-#     println(typeof(x))
-#     println(x)
-#     println()
-# end
-
-# macro superlu_name(type, name)
-#     return :(Symbol(_type_prefix($type), $name))
-# end
-
 macro superlufunc(x)
     return Expr(:quote, Symbol(x))
 end
@@ -99,8 +72,6 @@ for (fname, elty) in [
 end
 
 
-
-
 for (fname, elty, relty) in [
     (:sgstrs, Float32, Float32),
     (:dgstrs, Float64, Float64),
@@ -113,8 +84,6 @@ for (fname, elty, relty) in [
         end
     end
 end
-
-
 
 
 function sgsitrf(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
@@ -192,6 +161,7 @@ end
 function StatFree(arg1)
     ccall((:StatFree, libsuperlu), Cvoid, (Ptr{SuperLUStat_t},), arg1)
 end
+
 
 function sp_preorder(options::Ref{superlu_options_t}, A::Ref{SuperMatrix{Tv, NCformat{Tv}}}, perm_c::DenseVector{SuperLUInt}, etree::DenseVector{SuperLUInt}, AC::Ref{SuperMatrix{Tv, NCPformat{Tv}}}) where {Tv}
     ccall(

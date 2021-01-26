@@ -1,11 +1,4 @@
-
 SuperLUValueTypes = Union{Float32, Float64, ComplexF32, ComplexF64}
-
-# mutable struct SuperMatrixWrapper{Tv, StorageFormat<:SuperLUStorageFormat{Tv}}
-#     _supermatrix::SuperMatrix{Tv, StorageFormat}
-#     _store::
-# end
-
 
 mutable struct LUDecomposition{Tv<:SuperLUValueTypes, Ti<:Union{SuperLUInt}} <: LinearAlgebra.Factorization{Tv}
     _perm_r::Vector{Ti}

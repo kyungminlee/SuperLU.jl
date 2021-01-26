@@ -1,4 +1,3 @@
-
 abstract type SuperLUStorageFormat{Tv<:Number} end
 
 struct SuperMatrix{Tv,StorageFormat<:SuperLUStorageFormat{Tv}}

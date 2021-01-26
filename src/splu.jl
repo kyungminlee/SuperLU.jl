@@ -45,7 +45,6 @@ function _splu(
     rowind::Vector{SuperLUInt} = [SuperLUInt(y-1) for y in s.rowval]
     colptr::Vector{SuperLUInt} = [SuperLUInt(y-1) for y in s.colptr]
     Astore = Ref(NCformat{Tv}(nnz, pointer(nzval), pointer(rowind), pointer(colptr)))
-    # A = Ref(SuperMatrix(SLU_NC, dtype, SLU_GE, m, n, Base.unsafe_convert(Ptr{Cvoid}, Astore)))
     A = Ref(SuperMatrix{Tv,NCformat{Tv}}(SLU_NC, dtype, SLU_GE, m, n, pointer_from_objref(Astore)))
 
     etree = zeros(SuperLUInt, n)
@@ -65,7 +64,6 @@ function _splu(
         Ac = Ref{SuperMatrix{Tv, NCPformat{Tv}}}()
         sp_preorder(Ref(options), A, perm_c, etree, Ac)
         gstrf(
-            # Tv,
             Ref(options), Ac, relax, panel_size, etree,
             C_NULL, zero(SuperLUInt),
             perm_c, perm_r, L, U,
@@ -83,7 +81,7 @@ function _splu(
             throw(OutOfMemoryError())
         end
     end
-    lu = LUDecomposition{Tv, SuperLUInt}(perm_r, perm_c, L[], U[], stat[]) #, options, stat)
+    lu = LUDecomposition{Tv, SuperLUInt}(perm_r, perm_c, L[], U[], stat[])
     finalizer(lu) do lu
         Destroy_SuperNode_Matrix(Ref(lu._L))
         Destroy_CompCol_Matrix(Ref(lu._U))
