@@ -10,7 +10,7 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SuperLU_jll = "f391fee2-5786-5cc9-9662-0e362ec949e2"
 
 [compat]
-julia = "1.4"
+julia = "~1.5"
 CEnum = "0.4"
 
 [extras]
