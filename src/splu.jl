@@ -9,6 +9,11 @@ _get_matrix_strides(b::StridedVector) = (stride(b, 1), length(b))
 _get_matrix_strides(b::StridedMatrix) = strides(b)
 
 
+"""
+    splu(a::SparseMatrixCSC{Tv, Ti})
+
+Compute the LU factorization using SuperLU.
+"""
 function splu(s::SparseMatrixCSC{Tv, Ti}) where {Tv<:SuperLUValueTypes, Ti}
     options = Ref{superlu_options_t}()
     set_default_options(options)
