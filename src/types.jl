@@ -27,9 +27,11 @@ end
 Base.size(x::LUDecomposition) = (Int(x._L.nrow), Int(x._U.ncol))
 Base.size(x::LUDecomposition, i::Integer) = size(x)[i]
 
-if !isdefined(LinearAlgebra, :AdjointFactorization)
+if !isdefined(LinearAlgebra, :TransposeFactorization)
     Base.transpose(f::LUDecomposition) = Transpose(f)
     Base.adjoint(f::LUDecomposition) = Adjoint(f)
+else # overwrite transpose fallback, fall back for Base.adjoint
+    Base.transpose(f::LUDecomposition) = LinearAlgebra.TransposeFactorization(f)
 end
 
 @inline function Base.getproperty(lu::LUDecomposition{Tv, Ti}, d::Symbol) where {Tv, Ti}
