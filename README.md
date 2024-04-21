@@ -20,6 +20,10 @@ julia> A = sparse([1.0 2.0; 3.0 4.0])
 julia> lu = splu(A)
 ```
 
+## License
+
+SuperLU.jl is released under [MIT License](https://github.com/kyungminlee/SuperLU.jl/LICENSE).
+
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: http://kyungminlee.org/SuperLU.jl/stable
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
