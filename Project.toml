@@ -11,7 +11,7 @@ SuperLU_jll = "f391fee2-5786-5cc9-9662-0e362ec949e2"
 
 [compat]
 julia = "1.4"
-CEnum = "0.4"
+CEnum = "0.5"
 
 [extras]
 SuiteSparse = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
